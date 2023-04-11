@@ -11,8 +11,11 @@ class ActiveAppCtrl(Controller):
             @params : None
             @returns : Appid else 0
         '''
-        appln_id = request.env['onesignal.credentials'].sudo().search([('is_active','=',True)])
-        if appln_id:
+        if (
+            appln_id := request.env['onesignal.credentials']
+            .sudo()
+            .search([('is_active', '=', True)])
+        ):
             return appln_id.app_id
         else:
             return "0"

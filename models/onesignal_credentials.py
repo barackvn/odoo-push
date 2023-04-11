@@ -13,9 +13,7 @@ class OnesignalCredentials(models.Model):
     def activate_app(self):
         self.ensure_one()
         if not self.is_active:
-            #STEP 1 : CHECK IF BOOLEAN ACTIVE IN OTHER APP
-            app_ids = self.search([('is_active','=',True)])
-            if app_ids:
+            if app_ids := self.search([('is_active', '=', True)]):
                 raise Warning("Only one app can be active a time.")
             else:
                 self.is_active = True
