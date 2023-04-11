@@ -38,8 +38,10 @@ class OnesignalMessage(models.Model):
         
     @api.multi
     def get_app_data(self, app):
-        header = {"Content-Type": "application/json; charset=utf-8",
-          "Authorization": "Basic {}".format(app.apikey)}
+        header = {
+            "Content-Type": "application/json; charset=utf-8",
+            "Authorization": f"Basic {app.apikey}",
+        }
         appln_id = app.app_id
         return {'header':header, 
                 'app_id':appln_id}
@@ -57,31 +59,28 @@ class OnesignalMessage(models.Model):
 
         message_title = self.message_title
         message_title = message_title.encode('utf-8')
-        
-        payload = {"app_id": "{}".format(appln_data.get('app_id')),
-           "included_segments": ["All"],
-           "contents": {"en": "{}".format(message_content)},
-           "headings" :{"en": "{}".format(message_title)},
-           "url": "{}".format(self.launch_url),
-           "chrome_web_icon": "{}".format(self.icon),
-           "ttl": self.time_to_live or 3,
-           }
+
+        payload = {
+            "app_id": f"{appln_data.get('app_id')}",
+            "included_segments": ["All"],
+            "contents": {"en": f"{message_content}"},
+            "headings": {"en": f"{message_title}"},
+            "url": f"{self.launch_url}",
+            "chrome_web_icon": f"{self.icon}",
+            "ttl": self.time_to_live or 3,
+        }
         if self.priority:
             priority = self.get_key(var,self.priority)
-            payload.update({
-                'priority':priority
-                })
+            payload['priority'] = priority
         if self.send_to_chrome or self.send_to_mozilla or self.send_to_edge:
-            payload.update({
-                'isAnyWeb': True
-                })
+            payload['isAnyWeb'] = True
         try:
             response = requests.post("https://onesignal.com/api/v1/notifications", headers=header, data=json.dumps(payload))
             if response.status_code == 200:
                 resp = response.json()
-                self.summary = "RECEIPIENTS : {}".format(resp.get('recipients'))
+                self.summary = f"RECEIPIENTS : {resp.get('recipients')}"
             else:
-                self.summary = "Error : {}".format(response.text)
+                self.summary = f"Error : {response.text}"
         except SSLError as ex:
             raise Warning("Oops, SSL Seems blocking the request.")
         except Exception as ex:
